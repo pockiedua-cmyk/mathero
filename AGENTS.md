@@ -254,8 +254,9 @@ Rare Coin top-up via real money using ToyyibPay payment gateway (Touch 'n Go, FP
    - Project Settings → Service Accounts → Database Secrets → Show
    - Isi `FIREBASE_SECRET` dalam `toyyibpay_config.php`
 5. **Host PHP files** di server yang support PHP (webhosting murah rm5/bln pun boleh)
-6. **Set callback URL** dalam ToyyibPay dashboard:
+6. **Set callback URL** dalam ToyyibPay dashboard (jika ada):
    - Product → Category → Edit category → Callback URL = `https://your-server.com/toyyibpay_callback.php`
+   - Jika tiada ruangan Callback URL (ToyyibPay update dashboard), takpe — `billCallbackUrl` dihantar terus dalam API createBill setiap kali bil dicipta, jadi callback tetap jalan.
 7. **Update `TOYYIBPAY_CONFIG`** dalam `HeroMath.html`:
    - `secretKey`: Sama dengan `TOYYIBPAY_SECRET_KEY`
    - `categoryCode`: Sama dengan `TOYYIBPAY_CATEGORY_CODE`
@@ -312,7 +313,7 @@ User klik "💳 BELI RM X" di shop
   - `backend: 'php'` (default)
   - `phpProxyUrl` dan `phpCallbackUrl` ikut domain anda
   - `secretKey` boleh dikosongkan (PHP proxy guna config sendiri)
-- Set Callback URL di dashboard ToyyibPay → `https://domain-anda.com/toyyibpay_callback.php`
+- Callback URL di dashboard ToyyibPay optional — `billCallbackUrl` dihantar terus dalam API createBill
 
 **Option B: Firebase Cloud Function (tanpa PHP)**
 Guna Firebase Functions v1 (Spark percuma, tiada kos bulanan).
@@ -383,11 +384,12 @@ Guna Firebase Functions v1 (Spark percuma, tiada kos bulanan).
    };
    ```
 
-9. **Set Callback URL di dashboard ToyyibPay**
+9. **Set Callback URL di dashboard ToyyibPay (jika ada)**
    - Log masuk ToyyibPay → Product → Category
    - Click category anda → Edit
    - Callback URL: `https://us-central1-heromath-e4573.cloudfunctions.net/toyyibpayWebhook`
    - Simpan
+   - Jika tiada ruangan Callback URL (ToyyibPay update dashboard), takpe — `billCallbackUrl` dihantar terus dalam API createBill setiap kali bil dicipta, jadi callback tetap jalan.
 
 #### Kelebihan Cloud Function vs PHP:
 | Aspek | PHP | Cloud Function |
@@ -434,14 +436,12 @@ Guna Firebase Functions v1 (Spark percuma, tiada kos bulanan).
    };
    ```
 
-5. **Set Callback URL** di dashboard ToyyibPay:
-   - Product → Category → Edit
-   - Callback URL: `https://NAMA_SITE.netlify.app/.netlify/functions/toyyibpay-webhook`
-
-6. **Deploy ke Netlify:**
+5. **Deploy ke Netlify:**
    - Upload semua fail ke Netlify (drag-drop folder atau push ke git)
    - Netlify akan detect `netlify/functions/` dan deploy sebagai serverless functions
    - Netlify akan baca `package.json` dalam functions folder dan install `firebase-admin` secara automatik
+
+   > **Per-bill Callback URL**: Kita guna parameter `billCallbackUrl` dalam API createBill — jadi callback URL di-set secara automatik setiap kali bil dicipta. **Tak perlu setting apa-apa di dashboard ToyyibPay.** Walaupun ToyyibPay alih/dahului ruangan Callback URL di dashboard, sistem kita tetap jalan sebab callback URL dihantar terus dalam API request.
 
 #### Cara Netlify Functions berfungsi:
 ```
