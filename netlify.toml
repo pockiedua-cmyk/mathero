@@ -1,0 +1,14 @@
+# Netlify config untuk ToyyibPay Functions
+[build]
+  functions = "netlify/functions"
+
+# Redirect untuk clean URL (optional)
+[[redirects]]
+  from = "/api/create-bill"
+  to = "/.netlify/functions/toyyibpay-create-bill"
+  status = 200
+
+[[redirects]]
+  from = "/api/webhook"
+  to = "/.netlify/functions/toyyibpay-webhook"
+  status = 200
