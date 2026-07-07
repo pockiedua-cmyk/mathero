@@ -24,25 +24,30 @@ if (!admin.apps.length) {
 const db = admin.database();
 
 exports.handler = async (event) => {
-  // ToyyibPay hantar POST sebagai form-urlencoded (bukan JSON)
-  // parse body ikut Content-Type
-  function parseBody(raw, contentType) {
+  // ToyyibPay hantar callback sebagai form-urlencoded POST (jarang2 GET)
+  // Parse body — sokong JSON, form-urlencoded, dan query params (GET)
+  function parseForm(raw) {
     if (!raw) return {};
-    if (contentType && contentType.includes('application/json')) {
-      return JSON.parse(raw);
-    }
-    // form-urlencoded: refno=xxx&status=1&billcode=yyy&order_id=ORD_123&amount=200&paydate=2024-01-01
     const params = new URLSearchParams(raw);
     const obj = {};
     for (const [k, v] of params) obj[k] = v;
     return obj;
   }
 
-  const ct = (event.headers['content-type'] || event.headers['Content-Type'] || '').toLowerCase();
-  const rawBody = typeof event.body === 'string' ? event.body : '';
-  const body = (event.httpMethod === 'POST' || event.httpMethod === 'GET')
-    ? parseBody(rawBody, ct)
-    : {};
+  let body = {};
+  if (event.httpMethod === 'GET') {
+    // Callback via GET — data dalam query string
+    body = event.queryStringParameters || {};
+  } else if (event.httpMethod === 'POST') {
+    const ct = (event.headers['content-type'] || event.headers['Content-Type'] || '').toLowerCase();
+    const rawBody = typeof event.body === 'string' ? event.body : '';
+    if (ct.includes('application/json')) {
+      try { body = JSON.parse(rawBody); } catch (e) { body = {}; }
+    } else {
+      // form-urlencoded (default ToyyibPay)
+      body = parseForm(rawBody);
+    }
+  }
 
   const refno    = body.refno    || '';
   const status   = body.status   || '';

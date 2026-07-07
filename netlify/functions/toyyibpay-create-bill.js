@@ -8,13 +8,15 @@
  *   TOYYIBPAY_SECRET_KEY     — dari dashboard ToyyibPay
  *   TOYYIBPAY_CATEGORY_CODE  — dari Product → Category
  *   TOYYIBPAY_BASE_URL       — https://toyyibpay.com (atau https://dev.toyyibpay.com)
- *   SITE_URL                 — URL Netlify anda (contoh: https://heromath.netlify.app)
+ *   GAME_URL                 — URL game utama (contoh: https://heromath.netlify.app)
+ *   PAYMENT_URL              — URL site payment functions (contoh: https://heromathpay.netlify.app)
  */
 
 const TOYYIBPAY_SECRET_KEY    = process.env.TOYYIBPAY_SECRET_KEY;
 const TOYYIBPAY_CATEGORY_CODE = process.env.TOYYIBPAY_CATEGORY_CODE;
 const TOYYIBPAY_BASE_URL      = process.env.TOYYIBPAY_BASE_URL || 'https://toyyibpay.com';
-const SITE_URL                = process.env.SITE_URL || (process.env.URL || '');
+const GAME_URL                = process.env.GAME_URL;
+const PAYMENT_URL             = process.env.PAYMENT_URL;
 
 exports.handler = async (event) => {
   const headers = {
@@ -37,8 +39,8 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing required fields' }) };
     }
 
-    const webhookUrl = SITE_URL + '/.netlify/functions/toyyibpay-webhook';
-    const returnUrl  = SITE_URL + '?payment_return=1';
+    const webhookUrl = PAYMENT_URL + '/.netlify/functions/toyyibpay-webhook';
+    const returnUrl  = GAME_URL + '?payment_return=1';
 
     const params = new URLSearchParams();
     params.append('userSecretKey',           TOYYIBPAY_SECRET_KEY);
