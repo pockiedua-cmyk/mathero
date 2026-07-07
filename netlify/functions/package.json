@@ -1,8 +1,0 @@
-{
-  "name": "heromath-netlify-functions",
-  "version": "1.0.0",
-  "description": "Netlify Functions for HeroMath ToyyibPay integration",
-  "dependencies": {
-    "firebase-admin": "^12.0.0"
-  }
-}
