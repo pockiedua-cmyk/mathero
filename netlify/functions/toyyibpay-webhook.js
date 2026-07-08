@@ -16,6 +16,9 @@ const FB_URL = process.env.FIREBASE_DATABASE_URL;
 let _cachedToken = null;
 let _cachedTokenExpiry = 0;
 
+console.log('WEBHOOK ENV — FB_URL:', FB_URL ? FB_URL.substring(0, 50) + '...' : 'UNDEFINED');
+console.log('WEBHOOK ENV — FIREBASE_SERVICE_ACCOUNT:', process.env.FIREBASE_SERVICE_ACCOUNT ? 'SET (len:' + process.env.FIREBASE_SERVICE_ACCOUNT.length + ')' : 'UNDEFINED');
+
 async function getAccessToken() {
   if (_cachedToken && Date.now() < _cachedTokenExpiry - 60000) {
     return _cachedToken;
@@ -92,6 +95,10 @@ async function fbPatch(path, data) {
 }
 
 exports.handler = async (event) => {
+  console.log('WEBHOOK CALLED — method:', event.httpMethod, 'path:', event.path);
+  console.log('WEBHOOK CALLED — raw body:', typeof event.body === 'string' ? event.body.substring(0, 300) : 'NOT STRING');
+  console.log('WEBHOOK CALLED — query:', JSON.stringify(event.queryStringParameters || {}));
+
   function parseForm(raw) {
     if (!raw) return {};
     const params = new URLSearchParams(raw);
@@ -112,6 +119,7 @@ exports.handler = async (event) => {
       body = parseForm(rawBody);
     }
   }
+  console.log('WEBHOOK PARSED body:', JSON.stringify(body));
 
   const refno    = body.refno    || '';
   const status   = body.status   || '';
@@ -125,23 +133,30 @@ exports.handler = async (event) => {
   }
 
   try {
+    console.log('WEBHOOK fetching order:', 'orders/' + orderId);
     const order = await fbGet('orders/' + orderId);
+    console.log('WEBHOOK order data:', JSON.stringify(order));
 
     if (!order || !order.username) {
+      console.log('WEBHOOK order not found');
       return { statusCode: 404, body: `FAIL: Order ${orderId} not found` };
     }
 
     if (order.status === 'completed' || order.status === 'paid') {
+      console.log('WEBHOOK already processed, skipping');
       return { statusCode: 200, body: `OK: Order ${orderId} already processed` };
     }
 
     if (status === '1') {
       const username = order.username;
       const qty = parseInt(order.qty) || 0;
+      console.log(`WEBHOOK crediting ${qty} coin to ${username}`);
 
       const currentCoin = await fbGet(`tracking/${username}/shop/rare_coin`);
+      console.log('WEBHOOK current coin:', currentCoin);
       const newBalance = (currentCoin || 0) + qty;
       await fbPut(`tracking/${username}/shop/rare_coin`, newBalance);
+      console.log('WEBHOOK coin credited, new balance:', newBalance);
 
       await fbPatch('orders/' + orderId, {
         status: 'completed',
@@ -153,13 +168,14 @@ exports.handler = async (event) => {
       console.log(`Credited ${qty} Rare Coin to ${username} (Order ${orderId})`);
       return { statusCode: 200, body: `OK: ${qty} Rare Coin credited to ${username}` };
     } else {
+      console.log('WEBHOOK payment failed, status:', status);
       await fbPatch('orders/' + orderId, {
         status: 'failed', refno, billcode,
       });
       return { statusCode: 200, body: 'OK: Order marked as failed' };
     }
   } catch (err) {
-    console.error('Webhook error:', err);
+    console.error('Webhook error:', err.message, err.stack);
     return { statusCode: 500, body: 'FAIL: ' + err.message };
   }
 };
