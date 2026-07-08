@@ -64,12 +64,14 @@ exports.handler = async (event) => {
     });
 
     const data = await response.json();
+    console.log('ToyyibPay response:', JSON.stringify(data));
 
     if (data && data.length && data[0].BillCode) {
       const paymentUrl = TOYYIBPAY_BASE_URL + '/' + data[0].BillCode;
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, paymentUrl, billCode: data[0].BillCode }) };
     } else {
       const errMsg = data[0]?.error_msg || 'ToyyibPay API error';
+      console.error('ToyyibPay error:', errMsg);
       return { statusCode: 500, headers, body: JSON.stringify({ error: errMsg }) };
     }
   } catch (err) {
