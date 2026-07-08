@@ -55,7 +55,7 @@ exports.handler = async (event) => {
     params.append('billExternalReferenceNo', orderId);
     params.append('billTo',                  billTo);
     params.append('billEmail',               billEmail);
-    params.append('billPhone',               billPhone || '');
+    params.append('billPhone',               billPhone || '0123456789');
 
     const response = await fetch(TOYYIBPAY_BASE_URL + '/index.php/api/createBill', {
       method: 'POST',
@@ -63,8 +63,13 @@ exports.handler = async (event) => {
       body: params.toString(),
     });
 
-    const data = await response.json();
-    console.log('ToyyibPay response:', JSON.stringify(data));
+    const rawText = await response.text();
+    console.log('ToyyibPay raw response:', rawText);
+
+    let data;
+    try { data = JSON.parse(rawText); } catch (e) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Invalid JSON from ToyyibPay', raw: rawText, jsonError: e.message }) };
+    }
 
     if (data && data.length && data[0].BillCode) {
       const paymentUrl = TOYYIBPAY_BASE_URL + '/' + data[0].BillCode;
