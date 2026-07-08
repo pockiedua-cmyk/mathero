@@ -15,8 +15,8 @@
 const TOYYIBPAY_SECRET_KEY    = process.env.TOYYIBPAY_SECRET_KEY;
 const TOYYIBPAY_CATEGORY_CODE = process.env.TOYYIBPAY_CATEGORY_CODE;
 const TOYYIBPAY_BASE_URL      = process.env.TOYYIBPAY_BASE_URL || 'https://toyyibpay.com';
-const GAME_URL                = process.env.GAME_URL;
-const PAYMENT_URL             = process.env.PAYMENT_URL;
+const GAME_URL                = (process.env.GAME_URL || '').replace(/\/+$/, '');
+const PAYMENT_URL             = (process.env.PAYMENT_URL || '').replace(/\/+$/, '');
 
 // Debug: log partial key to verify env vars are loaded
 console.log('ENV CHECK — SECRET_KEY length:', (TOYYIBPAY_SECRET_KEY || '').length, 'first 4 chars:', (TOYYIBPAY_SECRET_KEY || 'UNDEFINED').substring(0,4));
