@@ -18,6 +18,13 @@ const TOYYIBPAY_BASE_URL      = process.env.TOYYIBPAY_BASE_URL || 'https://toyyi
 const GAME_URL                = process.env.GAME_URL;
 const PAYMENT_URL             = process.env.PAYMENT_URL;
 
+// Debug: log partial key to verify env vars are loaded
+console.log('ENV CHECK — SECRET_KEY length:', (TOYYIBPAY_SECRET_KEY || '').length, 'first 4 chars:', (TOYYIBPAY_SECRET_KEY || 'UNDEFINED').substring(0,4));
+console.log('ENV CHECK — CATEGORY_CODE:', TOYYIBPAY_CATEGORY_CODE || 'UNDEFINED');
+console.log('ENV CHECK — BASE_URL:', TOYYIBPAY_BASE_URL);
+console.log('ENV CHECK — GAME_URL:', GAME_URL || 'UNDEFINED');
+console.log('ENV CHECK — PAYMENT_URL:', PAYMENT_URL || 'UNDEFINED');
+
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -41,8 +48,10 @@ exports.handler = async (event) => {
 
     const webhookUrl = PAYMENT_URL + '/.netlify/functions/toyyibpay-webhook';
     const returnUrl  = GAME_URL + '?payment_return=1';
-
-    const params = new URLSearchParams();
+    console.log('PAYMENT_URL:', PAYMENT_URL || 'UNDEFINED');
+    console.log('GAME_URL:', GAME_URL || 'UNDEFINED');
+    console.log('webhookUrl:', webhookUrl);
+    console.log('returnUrl:', returnUrl);
     params.append('userSecretKey',           TOYYIBPAY_SECRET_KEY);
     params.append('categoryCode',            TOYYIBPAY_CATEGORY_CODE);
     params.append('billName',               billName || 'HeroMath Package');
