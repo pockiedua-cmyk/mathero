@@ -52,6 +52,8 @@ exports.handler = async (event) => {
     console.log('GAME_URL:', GAME_URL || 'UNDEFINED');
     console.log('webhookUrl:', webhookUrl);
     console.log('returnUrl:', returnUrl);
+
+    const params = new URLSearchParams();
     params.append('userSecretKey',           TOYYIBPAY_SECRET_KEY);
     params.append('categoryCode',            TOYYIBPAY_CATEGORY_CODE);
     params.append('billName',               billName || 'HeroMath Package');
